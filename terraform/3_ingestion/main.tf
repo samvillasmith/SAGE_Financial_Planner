@@ -25,10 +25,14 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "vectors" {
   bucket = "alex-vectors-${data.aws_caller_identity.current.account_id}"
-  
+
   tags = {
     Project = "alex"
     Part    = "3"
+  }
+
+  timeouts {
+    create = "2m"
   }
 }
 

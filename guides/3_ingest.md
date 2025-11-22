@@ -97,11 +97,12 @@ After deployment, Terraform will display important outputs. You need to save the
 
 ### Get Your API Key
 
-First, get your API key using the command shown in Terraform output:
+Get your API key directly from Terraform:
 ```bash
-# Replace the ID with the one from your Terraform output
-aws apigateway get-api-key --api-key YOUR_API_KEY_ID --include-value --query 'value' --output text
+terraform output -raw api_key_value
 ```
+
+This prints the actual API key value you need for your `.env` file.
 
 ### Update Your .env File
 

@@ -30,8 +30,8 @@ output "setup_instructions" {
     ALEX_API_ENDPOINT=${aws_api_gateway_stage.api.invoke_url}/ingest
     
     To get your API key value:
-    aws apigateway get-api-key --api-key ${aws_api_gateway_api_key.api_key.id} --include-value --query 'value' --output text
-    
+    terraform output -raw api_key_value
+
     Then add to .env:
     ALEX_API_KEY=<the-api-key-value>
     
