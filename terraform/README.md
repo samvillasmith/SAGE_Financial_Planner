@@ -1,110 +1,95 @@
-# Terraform Infrastructure
+# SAGE Terraform Infrastructure
 
-This directory contains Terraform configurations for the Alex Financial Planner project.
+Infrastructure as Code for the SAGE (Strategic Agentic Generative Explainer) financial planning platform.
 
-## Structure
+## Architecture Overview
 
-Each part of the course has its own independent Terraform directory:
+SAGE uses a modular Terraform structure with independent directories for each service layer:
 
-- **`2_sagemaker/`** - SageMaker serverless endpoint for embeddings (Guide 2)
-- **`3_ingestion/`** - S3 Vectors, Lambda, and API Gateway for document ingestion (Guide 3)
-- **`4_researcher/`** - App Runner service for AI researcher agent (Guide 4)
-- **`5_database/`** - Aurora Serverless v2 PostgreSQL with Data API (Guide 5)
-- **`6_agents/`** - Lambda functions for agent orchestra (Guide 6)
-- **`7_frontend/`** - API Lambda and frontend infrastructure (Guide 7)
-- **`8_observability/`** - LangFuse and monitoring setup (Guide 8)
+- **`2_sagemaker/`** - SageMaker serverless endpoint for text embeddings
+- **`3_ingestion/`** - S3 Vectors, Lambda, and API Gateway for document ingestion
+- **`4_researcher/`** - App Runner service for autonomous research agent
+- **`5_database/`** - Aurora Serverless v2 PostgreSQL with Data API
+- **`6_agents/`** - Lambda functions for multi-agent orchestration
+- **`7_frontend/`** - CloudFront, S3, and API Gateway for frontend
+- **`8_enterprise/`** - CloudWatch dashboards and monitoring
 
-## Key Design Decisions
+## Design Principles
 
-### Why Separate Directories?
+### Independent Deployment
 
-1. **Educational Clarity**: Each guide corresponds to exactly one Terraform directory
-2. **Independent Deployment**: Students can deploy each part without affecting others
-3. **Reduced Risk**: Mistakes in one part don't impact previously deployed infrastructure
-4. **Progressive Learning**: Can't accidentally deploy later parts before completing earlier ones
+Each directory maintains its own state file, enabling:
+- Incremental deployment and testing
+- Isolated failure domains
+- Independent scaling decisions
 
-### Why Local State?
+### Local State
 
-1. **Simplicity**: No need to set up and manage an S3 state bucket
-2. **Zero Dependencies**: Can start deploying immediately without prerequisite infrastructure
-3. **Cost Savings**: No S3 storage costs for state files
-4. **Security**: State files are automatically gitignored
+State files are stored locally for simplicity:
+- No S3 backend configuration required
+- Zero additional infrastructure costs
+- All `*.tfstate` files are gitignored
 
 ## Usage
 
-For each part of the course:
-
 ```bash
-# Navigate to the specific part's directory
-cd terraform/2_sagemaker  # (or 3_ingestion, 4_researcher, etc.)
+# Navigate to service directory
+cd terraform/4_researcher
 
-# Initialize Terraform (only needed once per directory)
+# Initialize (first time only)
 terraform init
 
-# Review what will be created
+# Preview changes
 terraform plan
 
-# Deploy the infrastructure
+# Deploy
 terraform apply
 
-# When done with that part (optional)
+# Cleanup
 terraform destroy
 ```
 
 ## Environment Variables
 
-Some Terraform configurations require environment variables from your `.env` file:
+Required variables (stored in root `.env`):
 
-- `OPENAI_API_KEY` - For the researcher agent (Part 4)
-- `ALEX_API_ENDPOINT` - API Gateway endpoint (from Part 3)
-- `ALEX_API_KEY` - API key for ingestion (from Part 3)
-- `AURORA_CLUSTER_ARN` - Aurora cluster ARN (from Part 5)
-- `AURORA_SECRET_ARN` - Secrets Manager ARN (from Part 5)
-- `VECTOR_BUCKET` - S3 Vectors bucket name (from Part 3)
-- `BEDROCK_MODEL_ID` - Bedrock model to use (Part 6)
-
-## State Management
-
-- Each directory maintains its own `terraform.tfstate` file
-- State files are stored locally (not in S3)
-- All `*.tfstate` files are gitignored for security
-- Back up state files before making major changes
+| Variable | Source | Description |
+|----------|--------|-------------|
+| `OPENAI_API_KEY` | OpenAI | API key for models |
+| `SAGE_API_ENDPOINT` | Part 3 output | Ingestion API Gateway URL |
+| `SAGE_API_KEY` | Part 3 output | API Gateway key |
+| `AURORA_CLUSTER_ARN` | Part 5 output | Database cluster ARN |
+| `AURORA_SECRET_ARN` | Part 5 output | Database credentials |
+| `VECTOR_BUCKET` | Part 3 output | S3 Vectors bucket name |
 
 ## Production Considerations
 
-This structure is optimized for learning. In production, you might consider:
-
-- **Remote State**: Store state in S3 with state locking via DynamoDB
-- **Modules**: Share common configurations across environments
-- **Workspaces**: Manage multiple environments (dev, staging, prod)
+For production deployments, consider:
+- **Remote State**: S3 backend with DynamoDB locking
+- **Modules**: Reusable configurations across environments
+- **Workspaces**: Multi-environment management (dev/staging/prod)
 - **CI/CD**: Automated deployment pipelines
-- **Terragrunt**: Orchestrate multiple Terraform configurations
 
 ## Troubleshooting
 
-If you encounter issues:
-
-1. **State Conflicts**: Each directory has independent state. If you need to import existing resources:
-   ```bash
-   terraform import <resource_type>.<resource_name> <resource_id>
-   ```
-
-2. **Missing Dependencies**: Ensure you've completed earlier guides and have the required environment variables
-
-3. **Clean Slate**: To start over in any directory:
-   ```bash
-   terraform destroy  # Remove resources
-   rm -rf .terraform terraform.tfstate*  # Clean local files
-   terraform init  # Reinitialize
-   ```
-
-## Cleanup Helper
-
-To clean up old monolithic Terraform files (if upgrading from an older version):
-
+**State Conflicts**: Import existing resources
 ```bash
-cd terraform
-python cleanup_old_structure.py
+terraform import <resource_type>.<resource_name> <resource_id>
 ```
 
-This will identify old files that can be safely removed.
+**Clean Slate**: Reset a directory
+```bash
+terraform destroy
+rm -rf .terraform terraform.tfstate*
+terraform init
+```
+
+---
+
+## Acknowledgments
+
+This project architecture is inspired by [Ed Donner's](https://github.com/ed-donner) "AI in Production" course. Thank you Ed for the excellent foundation and teaching approach that made this possible.
+
+---
+
+*Built by Samuel Villa-Smith*
