@@ -22,7 +22,7 @@ from agents.extensions.models.litellm_model import LitellmModel
 
 
 class BedrockOpenAIModel(Model):
-    """Custom model for OpenAI models on Bedrock that bypasses LiteLLM."""
+    """Custom model for OpenAI models on Bedrock using invoke_model with OpenAI-compatible format."""
 
     def __init__(self, model_id: str, region: str = "us-east-1"):
         self.model_id = model_id
@@ -41,10 +41,10 @@ class BedrockOpenAIModel(Model):
         conversation_id=None,
         prompt=None
     ):
-        # Build messages array
+        # Build messages array in OpenAI format
         messages = []
 
-        # Add system message if present
+        # Add system message
         if system_instructions:
             messages.append({"role": "system", "content": system_instructions})
 
@@ -53,17 +53,31 @@ class BedrockOpenAIModel(Model):
             messages.append({"role": "user", "content": input})
         elif isinstance(input, list):
             for item in input:
-                # Handle dict format (from agents SDK)
+                # Handle dict format
                 if isinstance(item, dict) and 'role' in item and 'content' in item:
                     messages.append({"role": item['role'], "content": str(item['content'])})
-                # Handle tool call results
+                # Handle tool call results - convert to assistant message with tool result
                 elif isinstance(item, dict) and item.get('type') == 'function_call_output':
                     messages.append({
                         "role": "tool",
                         "tool_call_id": item.get('call_id', ''),
                         "content": str(item.get('output', ''))
                     })
-                # Handle object format
+                # Handle ResponseFunctionToolCall objects - these need to become assistant messages
+                elif hasattr(item, 'type') and getattr(item, 'type') == 'function_call':
+                    messages.append({
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [{
+                            "id": getattr(item, 'call_id', ''),
+                            "type": "function",
+                            "function": {
+                                "name": getattr(item, 'name', ''),
+                                "arguments": getattr(item, 'arguments', '{}')
+                            }
+                        }]
+                    })
+                # Handle object format with role/content
                 elif hasattr(item, 'role') and hasattr(item, 'content'):
                     content = item.content
                     if isinstance(content, list):
@@ -88,31 +102,30 @@ class BedrockOpenAIModel(Model):
         # Build request body
         body = {
             "messages": messages,
-            "max_tokens": getattr(model_settings, 'max_tokens', 4096) if model_settings else 4096
+            "max_tokens": 4096
         }
 
-        # Convert tools to OpenAI format
-        # Note: Only pass essential tools to avoid model errors with too many complex tools
+        # Add tools in OpenAI format
         if tools:
             openai_tools = []
             for tool in tools:
                 if hasattr(tool, 'name') and hasattr(tool, 'params_json_schema'):
-                    # Filter to only include essential tools (skip complex MCP browser tools)
-                    # The model can still describe what it would do with browser tools
                     if tool.name in ['ingest_financial_document']:
                         openai_tools.append({
                             "type": "function",
                             "function": {
                                 "name": tool.name,
-                                "description": getattr(tool, 'description', ''),
+                                "description": getattr(tool, 'description', '') or f"Tool: {tool.name}",
                                 "parameters": tool.params_json_schema
                             }
                         })
             if openai_tools:
                 body["tools"] = openai_tools
+                # Force tool use
+                body["tool_choice"] = {"type": "function", "function": {"name": "ingest_financial_document"}}
 
-        print(f"DEBUG sending to model: {len(messages)} messages, {len(body.get('tools', []))} tools")
-        print(f"DEBUG request body: {json.dumps(body, indent=2)[:2000]}")
+        print(f"DEBUG invoke_model: {len(messages)} messages, {len(body.get('tools', []))} tools")
+        print(f"DEBUG messages: {json.dumps(messages, indent=2)[:1500]}")
 
         response = self.client.invoke_model(
             modelId=self.model_id,
@@ -122,14 +135,15 @@ class BedrockOpenAIModel(Model):
         )
 
         result = json.loads(response['body'].read())
-        message = result['choices'][0]['message']
+        print(f"DEBUG response: {json.dumps(result, indent=2)[:2000]}")
 
-        # Build output list
+        message = result['choices'][0]['message']
         output = []
 
         # Check for tool calls
         if 'tool_calls' in message and message['tool_calls']:
             for tool_call in message['tool_calls']:
+                print(f"DEBUG: Found tool call: {tool_call}")
                 output.append(ResponseFunctionToolCall(
                     id=tool_call['id'],
                     type="function_call",
@@ -158,7 +172,6 @@ class BedrockOpenAIModel(Model):
                 content=[ResponseOutputText(type="output_text", text="", annotations=[])]
             ))
 
-        # Return ModelResponse
         usage_data = result.get('usage', {})
         return ModelResponse(
             output=output,
@@ -171,7 +184,6 @@ class BedrockOpenAIModel(Model):
         )
 
     async def stream_response(self, *args, **kwargs):
-        # Fall back to non-streaming
         return await self.get_response(*args, **kwargs)
 
 # Suppress LiteLLM warnings about optional dependencies
@@ -300,7 +312,7 @@ async def health():
         "timestamp": datetime.now(UTC).isoformat(),
         "debug_container": container_indicators,
         "aws_region": os.environ.get("AWS_DEFAULT_REGION", "not set"),
-        "bedrock_model": "bedrock/amazon.nova-pro-v1:0",
+        "bedrock_model": "bedrock/openai.gpt-oss-120b-1:0",
     }
 
 

@@ -39,14 +39,18 @@ def ingest_with_retries(document: Dict[str, Any]) -> Dict[str, Any]:
 def ingest_financial_document(topic: str, analysis: str) -> Dict[str, Any]:
     """
     Ingest a financial document into the Sage knowledge base.
-    
+
     Args:
         topic: The topic or subject of the analysis (e.g., "AAPL Stock Analysis", "Retirement Planning Guide")
         analysis: Detailed analysis or advice with specific data and insights
-    
+
     Returns:
         Dictionary with success status and document ID
     """
+    print(f"DEBUG TOOL CALLED: ingest_financial_document with topic={topic[:50]}...")
+    print(f"DEBUG SAGE_API_ENDPOINT: {SAGE_API_ENDPOINT}")
+    print(f"DEBUG SAGE_API_KEY set: {bool(SAGE_API_KEY)}")
+
     if not SAGE_API_ENDPOINT or not SAGE_API_KEY:
         return {
             "success": False,
