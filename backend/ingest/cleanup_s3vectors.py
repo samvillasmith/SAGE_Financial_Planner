@@ -39,7 +39,7 @@ def delete_all_vectors():
         
         # Get a real embedding for a generic search term
         sagemaker_runtime = boto3.client('sagemaker-runtime')
-        SAGEMAKER_ENDPOINT = os.getenv('SAGEMAKER_ENDPOINT', 'alex-embedding-endpoint')
+        SAGEMAKER_ENDPOINT = os.getenv('SAGEMAKER_ENDPOINT', 'sage-embedding-endpoint')
         
         response = sagemaker_runtime.invoke_endpoint(
             EndpointName=SAGEMAKER_ENDPOINT,

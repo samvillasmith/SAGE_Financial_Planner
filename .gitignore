@@ -217,6 +217,16 @@ __marimo__/
 
 .DS_Store
 
+# Course materials - not part of portfolio
+guides/
+README.md
+CLAUDE.md
+AGENTS.md
+gameplan.md
+terraform/README.md
+frontend/README.md
+*.tfvars.example
+
 .terraform/
 terraform.tfstate.d/
 *.tfstate

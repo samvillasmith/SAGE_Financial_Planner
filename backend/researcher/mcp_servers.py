@@ -1,5 +1,5 @@
 """
-MCP server configurations for the Alex Researcher
+MCP server configurations for the Sage Researcher
 """
 from agents.mcp import MCPServerStdio
 

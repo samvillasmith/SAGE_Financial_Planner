@@ -25,7 +25,7 @@ data "aws_caller_identity" "current" {}
 
 # ECR repository for the researcher Docker image
 resource "aws_ecr_repository" "researcher" {
-  name                 = "alex-researcher"
+  name                 = "sage-researcher"
   image_tag_mutability = "MUTABLE"
   force_delete         = true  # Allow deletion even with images
   
@@ -34,7 +34,7 @@ resource "aws_ecr_repository" "researcher" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -45,7 +45,7 @@ resource "aws_ecr_repository" "researcher" {
 
 # IAM role for App Runner
 resource "aws_iam_role" "app_runner_role" {
-  name = "alex-app-runner-role"
+  name = "sage-app-runner-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -68,7 +68,7 @@ resource "aws_iam_role" "app_runner_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -81,7 +81,7 @@ resource "aws_iam_role_policy_attachment" "app_runner_ecr_access" {
 
 # IAM role for App Runner instance (runtime access to AWS services)
 resource "aws_iam_role" "app_runner_instance_role" {
-  name = "alex-app-runner-instance-role"
+  name = "sage-app-runner-instance-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -97,14 +97,14 @@ resource "aws_iam_role" "app_runner_instance_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
 
 # Policy for App Runner instance to access Bedrock
 resource "aws_iam_role_policy" "app_runner_instance_bedrock_access" {
-  name = "alex-app-runner-instance-bedrock-policy"
+  name = "sage-app-runner-instance-bedrock-policy"
   role = aws_iam_role.app_runner_instance_role.id
   
   policy = jsonencode({
@@ -125,7 +125,7 @@ resource "aws_iam_role_policy" "app_runner_instance_bedrock_access" {
 
 # App Runner service
 resource "aws_apprunner_service" "researcher" {
-  service_name = "alex-researcher"
+  service_name = "sage-researcher"
   
   source_configuration {
     auto_deployments_enabled = false
@@ -141,8 +141,8 @@ resource "aws_apprunner_service" "researcher" {
         port = "8000"
         runtime_environment_variables = {
           OPENAI_API_KEY    = var.openai_api_key
-          ALEX_API_ENDPOINT = var.alex_api_endpoint
-          ALEX_API_KEY      = var.alex_api_key
+          SAGE_API_ENDPOINT = var.sage_api_endpoint
+          SAGE_API_KEY      = var.sage_api_key
         }
       }
       image_repository_type = "ECR"
@@ -156,7 +156,7 @@ resource "aws_apprunner_service" "researcher" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -168,7 +168,7 @@ resource "aws_apprunner_service" "researcher" {
 # IAM role for EventBridge
 resource "aws_iam_role" "eventbridge_role" {
   count = var.scheduler_enabled ? 1 : 0
-  name  = "alex-eventbridge-scheduler-role"
+  name  = "sage-eventbridge-scheduler-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -184,7 +184,7 @@ resource "aws_iam_role" "eventbridge_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -192,7 +192,7 @@ resource "aws_iam_role" "eventbridge_role" {
 # Lambda function for invoking researcher
 resource "aws_lambda_function" "scheduler_lambda" {
   count         = var.scheduler_enabled ? 1 : 0
-  function_name = "alex-researcher-scheduler"
+  function_name = "sage-researcher-scheduler"
   role          = aws_iam_role.lambda_scheduler_role[0].arn
   
   # Note: The deployment package will be created by the guide instructions
@@ -211,7 +211,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -219,7 +219,7 @@ resource "aws_lambda_function" "scheduler_lambda" {
 # IAM role for scheduler Lambda
 resource "aws_iam_role" "lambda_scheduler_role" {
   count = var.scheduler_enabled ? 1 : 0
-  name  = "alex-scheduler-lambda-role"
+  name  = "sage-scheduler-lambda-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -235,7 +235,7 @@ resource "aws_iam_role" "lambda_scheduler_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "4"
   }
 }
@@ -250,7 +250,7 @@ resource "aws_iam_role_policy_attachment" "lambda_scheduler_basic" {
 # EventBridge schedule
 resource "aws_scheduler_schedule" "research_schedule" {
   count = var.scheduler_enabled ? 1 : 0
-  name  = "alex-research-schedule"
+  name  = "sage-research-schedule"
   
   flexible_time_window {
     mode = "OFF"

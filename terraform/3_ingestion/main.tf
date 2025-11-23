@@ -24,10 +24,10 @@ data "aws_caller_identity" "current" {}
 # ========================================
 
 resource "aws_s3_bucket" "vectors" {
-  bucket = "alex-vectors-${data.aws_caller_identity.current.account_id}"
+  bucket = "sage-vectors-${data.aws_caller_identity.current.account_id}"
 
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 
@@ -69,7 +69,7 @@ resource "aws_s3_bucket_public_access_block" "vectors" {
 
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "alex-ingest-lambda-role"
+  name = "sage-ingest-lambda-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -85,14 +85,14 @@ resource "aws_iam_role" "lambda_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
 
 # Lambda policy for S3 Vectors and SageMaker
 resource "aws_iam_role_policy" "lambda_policy" {
-  name = "alex-ingest-lambda-policy"
+  name = "sage-ingest-lambda-policy"
   role = aws_iam_role.lambda_role.id
   
   policy = jsonencode({
@@ -143,7 +143,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 # Lambda function
 resource "aws_lambda_function" "ingest" {
-  function_name = "alex-ingest"
+  function_name = "sage-ingest"
   role          = aws_iam_role.lambda_role.arn
   
   # Note: The deployment package will be created by the guide instructions
@@ -163,18 +163,18 @@ resource "aws_lambda_function" "ingest" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
 
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_logs" {
-  name              = "/aws/lambda/alex-ingest"
+  name              = "/aws/lambda/sage-ingest"
   retention_in_days = 7
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
@@ -185,15 +185,15 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 
 # REST API
 resource "aws_api_gateway_rest_api" "api" {
-  name        = "alex-api"
-  description = "Alex Financial Planner API"
+  name        = "sage-api"
+  description = "Sage Financial Planner API"
   
   endpoint_configuration {
     types = ["REGIONAL"]
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
@@ -258,24 +258,24 @@ resource "aws_api_gateway_stage" "api" {
   stage_name    = "prod"
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
 
 # API Key
 resource "aws_api_gateway_api_key" "api_key" {
-  name = "alex-api-key"
+  name = "sage-api-key"
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "3"
   }
 }
 
 # Usage Plan
 resource "aws_api_gateway_usage_plan" "plan" {
-  name = "alex-usage-plan"
+  name = "sage-usage-plan"
   
   api_stages {
     api_id = aws_api_gateway_rest_api.api.id

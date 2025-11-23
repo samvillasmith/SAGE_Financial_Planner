@@ -142,7 +142,7 @@ def create_test_data(db_models: Database):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Reset Alex database')
+    parser = argparse.ArgumentParser(description='Reset Sage database')
     parser.add_argument('--with-test-data', action='store_true',
                        help='Create test user with sample portfolio')
     parser.add_argument('--skip-drop', action='store_true',

@@ -144,12 +144,12 @@ def test_multiple_accounts():
     sqs = boto3.client('sqs', region_name=os.getenv('DEFAULT_AWS_REGION', 'us-east-1'))
     
     # Get queue URL
-    queue_name = 'alex-analysis-jobs'
+    queue_name = 'sage-analysis-jobs'
     response = sqs.get_queue_url(QueueName=queue_name)
     queue_url = response['QueueUrl']
 
     # sqs = boto3.client('sqs', region_name='ap-southeast-2')
-    # queue_url = 'https://sqs.ap-southeast-2.amazonaws.com/596644540428/alex-analysis-jobs'
+    # queue_url = 'https://sqs.ap-southeast-2.amazonaws.com/596644540428/sage-analysis-jobs'
     
     message = sqs.send_message(
         QueueUrl=queue_url,

@@ -24,7 +24,7 @@ data "aws_caller_identity" "current" {}
 # ========================================
 
 resource "aws_sqs_queue" "analysis_jobs" {
-  name                       = "alex-analysis-jobs"
+  name                       = "sage-analysis-jobs"
   delay_seconds             = 0
   max_message_size          = 262144
   message_retention_seconds = 86400  # 1 day
@@ -37,16 +37,16 @@ resource "aws_sqs_queue" "analysis_jobs" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
   }
 }
 
 resource "aws_sqs_queue" "analysis_jobs_dlq" {
-  name = "alex-analysis-jobs-dlq"
+  name = "sage-analysis-jobs-dlq"
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
   }
 }
@@ -56,7 +56,7 @@ resource "aws_sqs_queue" "analysis_jobs_dlq" {
 # ========================================
 
 resource "aws_iam_role" "lambda_agents_role" {
-  name = "alex-lambda-agents-role"
+  name = "sage-lambda-agents-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -72,14 +72,14 @@ resource "aws_iam_role" "lambda_agents_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
   }
 }
 
 # IAM policy for Lambda agents
 resource "aws_iam_role_policy" "lambda_agents_policy" {
-  name = "alex-lambda-agents-policy"
+  name = "sage-lambda-agents-policy"
   role = aws_iam_role.lambda_agents_role.id
   
   policy = jsonencode({
@@ -111,7 +111,7 @@ resource "aws_iam_role_policy" "lambda_agents_policy" {
         Action = [
           "lambda:InvokeFunction"
         ]
-        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:alex-*"
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:sage-*"
       },
       # Aurora Data API access
       {
@@ -190,10 +190,10 @@ resource "aws_iam_role_policy_attachment" "lambda_agents_basic" {
 
 # S3 bucket for Lambda packages (packages > 50MB must use S3)
 resource "aws_s3_bucket" "lambda_packages" {
-  bucket = "alex-lambda-packages-${data.aws_caller_identity.current.account_id}"
+  bucket = "sage-lambda-packages-${data.aws_caller_identity.current.account_id}"
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
   }
 }
@@ -208,7 +208,7 @@ resource "aws_s3_object" "lambda_packages" {
   etag   = fileexists("${path.module}/../../backend/${each.key}/${each.key}_lambda.zip") ? filemd5("${path.module}/../../backend/${each.key}/${each.key}_lambda.zip") : null
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = each.key
   }
@@ -220,7 +220,7 @@ resource "aws_s3_object" "lambda_packages" {
 
 # Planner (Orchestrator) Lambda
 resource "aws_lambda_function" "planner" {
-  function_name = "alex-planner"
+  function_name = "sage-planner"
   role          = aws_iam_role.lambda_agents_role.arn
   
   # Using S3 for deployment package (>50MB)
@@ -237,7 +237,7 @@ resource "aws_lambda_function" "planner" {
     variables = {
       AURORA_CLUSTER_ARN = var.aurora_cluster_arn
       AURORA_SECRET_ARN  = var.aurora_secret_arn
-      DATABASE_NAME      = "alex"
+      DATABASE_NAME      = "sage"
       VECTOR_BUCKET      = var.vector_bucket
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       BEDROCK_REGION     = var.bedrock_region
@@ -254,7 +254,7 @@ resource "aws_lambda_function" "planner" {
   }
 
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = "orchestrator"
   }
@@ -271,7 +271,7 @@ resource "aws_lambda_event_source_mapping" "planner_sqs" {
 
 # Tagger Lambda
 resource "aws_lambda_function" "tagger" {
-  function_name = "alex-tagger"
+  function_name = "sage-tagger"
   role          = aws_iam_role.lambda_agents_role.arn
 
   # Using S3 for deployment package (>50MB)
@@ -288,7 +288,7 @@ resource "aws_lambda_function" "tagger" {
     variables = {
       AURORA_CLUSTER_ARN = var.aurora_cluster_arn
       AURORA_SECRET_ARN  = var.aurora_secret_arn
-      DATABASE_NAME      = "alex"
+      DATABASE_NAME      = "sage"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       BEDROCK_REGION     = var.bedrock_region
       DEFAULT_AWS_REGION = var.aws_region
@@ -301,7 +301,7 @@ resource "aws_lambda_function" "tagger" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = "tagger"
   }
@@ -311,7 +311,7 @@ resource "aws_lambda_function" "tagger" {
 
 # Reporter Lambda
 resource "aws_lambda_function" "reporter" {
-  function_name = "alex-reporter"
+  function_name = "sage-reporter"
   role          = aws_iam_role.lambda_agents_role.arn
   
   # Using S3 for deployment package (>50MB)
@@ -328,7 +328,7 @@ resource "aws_lambda_function" "reporter" {
     variables = {
       AURORA_CLUSTER_ARN = var.aurora_cluster_arn
       AURORA_SECRET_ARN  = var.aurora_secret_arn
-      DATABASE_NAME      = "alex"
+      DATABASE_NAME      = "sage"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       BEDROCK_REGION     = var.bedrock_region
       DEFAULT_AWS_REGION = var.aws_region
@@ -342,7 +342,7 @@ resource "aws_lambda_function" "reporter" {
   }
 
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = "reporter"
   }
@@ -352,7 +352,7 @@ resource "aws_lambda_function" "reporter" {
 
 # Charter Lambda
 resource "aws_lambda_function" "charter" {
-  function_name = "alex-charter"
+  function_name = "sage-charter"
   role          = aws_iam_role.lambda_agents_role.arn
   
   # Using S3 for deployment package (>50MB)
@@ -369,7 +369,7 @@ resource "aws_lambda_function" "charter" {
     variables = {
       AURORA_CLUSTER_ARN = var.aurora_cluster_arn
       AURORA_SECRET_ARN  = var.aurora_secret_arn
-      DATABASE_NAME      = "alex"
+      DATABASE_NAME      = "sage"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       BEDROCK_REGION     = var.bedrock_region
       DEFAULT_AWS_REGION = var.aws_region
@@ -382,7 +382,7 @@ resource "aws_lambda_function" "charter" {
   }
 
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = "charter"
   }
@@ -392,7 +392,7 @@ resource "aws_lambda_function" "charter" {
 
 # Retirement Lambda
 resource "aws_lambda_function" "retirement" {
-  function_name = "alex-retirement"
+  function_name = "sage-retirement"
   role          = aws_iam_role.lambda_agents_role.arn
   
   # Using S3 for deployment package (>50MB)
@@ -409,7 +409,7 @@ resource "aws_lambda_function" "retirement" {
     variables = {
       AURORA_CLUSTER_ARN = var.aurora_cluster_arn
       AURORA_SECRET_ARN  = var.aurora_secret_arn
-      DATABASE_NAME      = "alex"
+      DATABASE_NAME      = "sage"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       BEDROCK_REGION     = var.bedrock_region
       DEFAULT_AWS_REGION = var.aws_region
@@ -422,7 +422,7 @@ resource "aws_lambda_function" "retirement" {
   }
 
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = "retirement"
   }
@@ -434,11 +434,11 @@ resource "aws_lambda_function" "retirement" {
 resource "aws_cloudwatch_log_group" "agent_logs" {
   for_each = toset(["planner", "tagger", "reporter", "charter", "retirement"])
   
-  name              = "/aws/lambda/alex-${each.key}"
+  name              = "/aws/lambda/sage-${each.key}"
   retention_in_days = 7
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "6"
     Agent   = each.key
   }

@@ -3,7 +3,7 @@ name = "reporter"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "alex-database",
+    "sage-database",
     "boto3>=1.40.9",
     "langfuse>=3.3.4",
     "openai-agents[litellm]>=0.2.6",
@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-alex-database = { path = "../database", editable = true }
+sage-database = { path = "../database", editable = true }

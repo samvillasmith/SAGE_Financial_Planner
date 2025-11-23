@@ -1,5 +1,5 @@
 """
-FastAPI backend for Alex Financial Advisor
+FastAPI backend for Sage Financial Advisor
 Handles all API routes with Clerk JWT authentication
 """
 
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Alex Financial Advisor API",
+    title="Sage Financial Advisor API",
     description="Backend API for AI-powered financial planning",
     version="1.0.0"
 )

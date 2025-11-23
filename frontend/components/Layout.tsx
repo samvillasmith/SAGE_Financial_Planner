@@ -32,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
               <div className="flex items-center gap-8">
                 <Link href="/dashboard" className="flex items-center">
                   <h1 className="text-xl font-bold text-dark">
-                    Alex <span className="text-primary">AI Financial Advisor</span>
+                    SAGE <span className="text-emerald-600">Financial Intelligence</span>
                   </h1>
                 </Link>
 
@@ -157,7 +157,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 text-center">
-                © 2025 Alex AI Financial Advisor. Powered by AI agents and built with care.
+                © 2025 SAGE Financial Intelligence. Built by Samuel Villa-Smith.
               </p>
             </div>
           </div>

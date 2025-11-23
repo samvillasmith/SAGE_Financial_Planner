@@ -19,10 +19,10 @@ logger = logging.getLogger()
 lambda_client = boto3.client("lambda")
 
 # Lambda function names from environment
-TAGGER_FUNCTION = os.getenv("TAGGER_FUNCTION", "alex-tagger")
-REPORTER_FUNCTION = os.getenv("REPORTER_FUNCTION", "alex-reporter")
-CHARTER_FUNCTION = os.getenv("CHARTER_FUNCTION", "alex-charter")
-RETIREMENT_FUNCTION = os.getenv("RETIREMENT_FUNCTION", "alex-retirement")
+TAGGER_FUNCTION = os.getenv("TAGGER_FUNCTION", "sage-tagger")
+REPORTER_FUNCTION = os.getenv("REPORTER_FUNCTION", "sage-reporter")
+CHARTER_FUNCTION = os.getenv("CHARTER_FUNCTION", "sage-charter")
+RETIREMENT_FUNCTION = os.getenv("RETIREMENT_FUNCTION", "sage-retirement")
 MOCK_LAMBDAS = os.getenv("MOCK_LAMBDAS", "false").lower() == "true"
 
 

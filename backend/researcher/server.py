@@ -1,17 +1,178 @@
 """
-Alex Researcher Service - Investment Advice Agent
+Sage Researcher Service - Investment Advice Agent
 """
 
 import os
 import logging
+import json
 from datetime import datetime, UTC
-from typing import Optional
+from typing import Optional, Any
 
+import boto3
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from agents import Agent, Runner, trace
+from agents.models.interface import Model
+from agents.models.openai_responses import ModelResponse, Usage
+from openai.types.responses.response_output_message import ResponseOutputMessage
+from openai.types.responses.response_output_text import ResponseOutputText
+from openai.types.responses.response_function_tool_call import ResponseFunctionToolCall
 from agents.extensions.models.litellm_model import LitellmModel
+
+
+class BedrockOpenAIModel(Model):
+    """Custom model for OpenAI models on Bedrock that bypasses LiteLLM."""
+
+    def __init__(self, model_id: str, region: str = "us-east-1"):
+        self.model_id = model_id
+        self.client = boto3.client('bedrock-runtime', region_name=region)
+
+    async def get_response(
+        self,
+        system_instructions,
+        input,
+        model_settings,
+        tools,
+        output_schema,
+        handoffs,
+        tracing,
+        previous_response_id=None,
+        conversation_id=None,
+        prompt=None
+    ):
+        # Build messages array
+        messages = []
+
+        # Add system message if present
+        if system_instructions:
+            messages.append({"role": "system", "content": system_instructions})
+
+        # Convert input to messages
+        if isinstance(input, str):
+            messages.append({"role": "user", "content": input})
+        elif isinstance(input, list):
+            for item in input:
+                # Handle dict format (from agents SDK)
+                if isinstance(item, dict) and 'role' in item and 'content' in item:
+                    messages.append({"role": item['role'], "content": str(item['content'])})
+                # Handle tool call results
+                elif isinstance(item, dict) and item.get('type') == 'function_call_output':
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": item.get('call_id', ''),
+                        "content": str(item.get('output', ''))
+                    })
+                # Handle object format
+                elif hasattr(item, 'role') and hasattr(item, 'content'):
+                    content = item.content
+                    if isinstance(content, list):
+                        text_parts = []
+                        for part in content:
+                            if hasattr(part, 'text'):
+                                text_parts.append(part.text)
+                            elif isinstance(part, str):
+                                text_parts.append(part)
+                        content = " ".join(text_parts)
+                    messages.append({"role": item.role, "content": str(content)})
+                # Handle tool call output objects
+                elif hasattr(item, 'type') and item.type == 'function_call_output':
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": getattr(item, 'call_id', ''),
+                        "content": str(getattr(item, 'output', ''))
+                    })
+                elif isinstance(item, str):
+                    messages.append({"role": "user", "content": item})
+
+        # Build request body
+        body = {
+            "messages": messages,
+            "max_tokens": getattr(model_settings, 'max_tokens', 4096) if model_settings else 4096
+        }
+
+        # Convert tools to OpenAI format
+        # Note: Only pass essential tools to avoid model errors with too many complex tools
+        if tools:
+            openai_tools = []
+            for tool in tools:
+                if hasattr(tool, 'name') and hasattr(tool, 'params_json_schema'):
+                    # Filter to only include essential tools (skip complex MCP browser tools)
+                    # The model can still describe what it would do with browser tools
+                    if tool.name in ['ingest_financial_document']:
+                        openai_tools.append({
+                            "type": "function",
+                            "function": {
+                                "name": tool.name,
+                                "description": getattr(tool, 'description', ''),
+                                "parameters": tool.params_json_schema
+                            }
+                        })
+            if openai_tools:
+                body["tools"] = openai_tools
+
+        print(f"DEBUG sending to model: {len(messages)} messages, {len(body.get('tools', []))} tools")
+        print(f"DEBUG request body: {json.dumps(body, indent=2)[:2000]}")
+
+        response = self.client.invoke_model(
+            modelId=self.model_id,
+            body=json.dumps(body),
+            contentType='application/json',
+            accept='application/json'
+        )
+
+        result = json.loads(response['body'].read())
+        message = result['choices'][0]['message']
+
+        # Build output list
+        output = []
+
+        # Check for tool calls
+        if 'tool_calls' in message and message['tool_calls']:
+            for tool_call in message['tool_calls']:
+                output.append(ResponseFunctionToolCall(
+                    id=tool_call['id'],
+                    type="function_call",
+                    call_id=tool_call['id'],
+                    name=tool_call['function']['name'],
+                    arguments=tool_call['function']['arguments']
+                ))
+
+        # Add text content if present
+        if message.get('content'):
+            output.append(ResponseOutputMessage(
+                id="msg_" + result.get('id', 'unknown'),
+                type="message",
+                role="assistant",
+                status="completed",
+                content=[ResponseOutputText(type="output_text", text=message['content'], annotations=[])]
+            ))
+
+        # If no output, add empty message
+        if not output:
+            output.append(ResponseOutputMessage(
+                id="msg_" + result.get('id', 'unknown'),
+                type="message",
+                role="assistant",
+                status="completed",
+                content=[ResponseOutputText(type="output_text", text="", annotations=[])]
+            ))
+
+        # Return ModelResponse
+        usage_data = result.get('usage', {})
+        return ModelResponse(
+            output=output,
+            usage=Usage(
+                input_tokens=usage_data.get('prompt_tokens', 0),
+                output_tokens=usage_data.get('completion_tokens', 0),
+                total_tokens=usage_data.get('total_tokens', 0)
+            ),
+            response_id=result.get('id')
+        )
+
+    async def stream_response(self, *args, **kwargs):
+        # Fall back to non-streaming
+        return await self.get_response(*args, **kwargs)
 
 # Suppress LiteLLM warnings about optional dependencies
 logging.getLogger("LiteLLM").setLevel(logging.CRITICAL)
@@ -24,7 +185,7 @@ from tools import ingest_financial_document
 # Load environment
 load_dotenv(override=True)
 
-app = FastAPI(title="Alex Researcher Service")
+app = FastAPI(title="Sage Researcher Service")
 
 
 # Request model
@@ -41,27 +202,20 @@ async def run_research_agent(topic: str = None) -> str:
     else:
         query = DEFAULT_RESEARCH_PROMPT
 
-    # Please override these variables with the region you are using
-    # Other choices: us-west-2 (for OpenAI OSS models) and eu-central-1
+    # Region configuration - all us-east-1
     REGION = "us-east-1"
     os.environ["AWS_REGION_NAME"] = REGION  # LiteLLM's preferred variable
     os.environ["AWS_REGION"] = REGION  # Boto3 standard
     os.environ["AWS_DEFAULT_REGION"] = REGION  # Fallback
 
-    # Please override this variable with the model you are using
-    # Common choices: bedrock/eu.amazon.nova-pro-v1:0 for EU and bedrock/us.amazon.nova-pro-v1:0 for US
-    # or bedrock/amazon.nova-pro-v1:0 if you are not using inference profiles
-    # bedrock/openai.gpt-oss-120b-1:0 for OpenAI OSS models
-    # bedrock/converse/us.anthropic.claude-sonnet-4-20250514-v1:0 for Claude Sonnet 4
-    # NOTE that nova-pro is needed to support tools and MCP servers; nova-lite is not enough - thank you Yuelin L.!
-    MODEL = "bedrock/us.amazon.nova-pro-v1:0"
-    model = LitellmModel(model=MODEL)
+    # Model configuration - OpenAI GPT OSS 120B via custom Bedrock class
+    model = BedrockOpenAIModel(model_id="openai.gpt-oss-120b-1:0", region=REGION)
 
     # Create and run the agent with MCP server
     with trace("Researcher"):
         async with create_playwright_mcp_server(timeout_seconds=60) as playwright_mcp:
             agent = Agent(
-                name="Alex Investment Researcher",
+                name="Sage Investment Researcher",
                 instructions=get_agent_instructions(),
                 model=model,
                 tools=[ingest_financial_document],
@@ -77,7 +231,7 @@ async def run_research_agent(topic: str = None) -> str:
 async def root():
     """Health check endpoint."""
     return {
-        "service": "Alex Researcher",
+        "service": "Sage Researcher",
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
     }
@@ -140,9 +294,9 @@ async def health():
     }
 
     return {
-        "service": "Alex Researcher",
+        "service": "Sage Researcher",
         "status": "healthy",
-        "alex_api_configured": bool(os.getenv("ALEX_API_ENDPOINT") and os.getenv("ALEX_API_KEY")),
+        "sage_api_configured": bool(os.getenv("SAGE_API_ENDPOINT") and os.getenv("SAGE_API_KEY")),
         "timestamp": datetime.now(UTC).isoformat(),
         "debug_container": container_indicators,
         "aws_region": os.environ.get("AWS_DEFAULT_REGION", "not set"),

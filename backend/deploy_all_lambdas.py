@@ -128,7 +128,7 @@ def main():
     # Check for --package flag
     force_package = '--package' in sys.argv
     
-    print("🎯 Deploying Alex Agent Lambda Functions (via Terraform)")
+    print("🎯 Deploying Sage Agent Lambda Functions (via Terraform)")
     print("=" * 50)
     
     # Get AWS account ID

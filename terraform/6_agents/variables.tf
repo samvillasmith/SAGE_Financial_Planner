@@ -31,7 +31,7 @@ variable "bedrock_region" {
 variable "sagemaker_endpoint" {
   description = "SageMaker endpoint name from Part 2"
   type        = string
-  default     = "alex-embedding-endpoint"
+  default     = "sage-embedding-endpoint"
 }
 
 variable "polygon_api_key" {

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run a full end-to-end test of the Alex agent orchestration.
+Run a full end-to-end test of the Sage agent orchestration.
 This creates a test job and monitors it through completion.
 
 Usage:
@@ -31,7 +31,7 @@ sqs = boto3.client('sqs')
 sts = boto3.client('sts')
 
 # Get configuration
-QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'alex-analysis-jobs')
+QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'sage-analysis-jobs')
 
 
 def get_queue_url():
@@ -49,7 +49,7 @@ def get_queue_url():
 def main():
     """Run the full test."""
     print("=" * 70)
-    print("🎯 Alex Agent Orchestration - Full Test")
+    print("🎯 Sage Agent Orchestration - Full Test")
     print("=" * 70)
     
     # Display AWS info

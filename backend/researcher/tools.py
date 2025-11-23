@@ -1,5 +1,5 @@
 """
-Tools for the Alex Researcher agent
+Tools for the Sage Researcher agent
 """
 import os
 from typing import Dict, Any
@@ -9,17 +9,17 @@ from agents import function_tool
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Configuration from environment
-ALEX_API_ENDPOINT = os.getenv("ALEX_API_ENDPOINT")
-ALEX_API_KEY = os.getenv("ALEX_API_KEY")
+SAGE_API_ENDPOINT = os.getenv("SAGE_API_ENDPOINT")
+SAGE_API_KEY = os.getenv("SAGE_API_KEY")
 
 
 def _ingest(document: Dict[str, Any]) -> Dict[str, Any]:
     """Internal function to make the actual API call."""
     with httpx.Client() as client:
         response = client.post(
-            ALEX_API_ENDPOINT,
+            SAGE_API_ENDPOINT,
             json=document,
-            headers={"x-api-key": ALEX_API_KEY},
+            headers={"x-api-key": SAGE_API_KEY},
             timeout=30.0
         )
         response.raise_for_status()
@@ -38,7 +38,7 @@ def ingest_with_retries(document: Dict[str, Any]) -> Dict[str, Any]:
 @function_tool
 def ingest_financial_document(topic: str, analysis: str) -> Dict[str, Any]:
     """
-    Ingest a financial document into the Alex knowledge base.
+    Ingest a financial document into the Sage knowledge base.
     
     Args:
         topic: The topic or subject of the analysis (e.g., "AAPL Stock Analysis", "Retirement Planning Guide")
@@ -47,10 +47,10 @@ def ingest_financial_document(topic: str, analysis: str) -> Dict[str, Any]:
     Returns:
         Dictionary with success status and document ID
     """
-    if not ALEX_API_ENDPOINT or not ALEX_API_KEY:
+    if not SAGE_API_ENDPOINT or not SAGE_API_KEY:
         return {
             "success": False,
-            "error": "Alex API not configured. Running in local mode."
+            "error": "Sage API not configured. Running in local mode."
         }
     
     document = {

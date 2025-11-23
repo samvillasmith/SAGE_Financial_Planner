@@ -6,14 +6,14 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Alex AI Financial Advisor - Intelligent Portfolio Management</title>
+        <title>SAGE - Strategic Agentic Generative Explainer</title>
       </Head>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-slate-50">
       {/* Navigation */}
       <nav className="px-8 py-6 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="text-2xl font-bold text-dark">
-            Alex <span className="text-primary">AI Financial Advisor</span>
+            SAGE <span className="text-emerald-600">Financial Intelligence</span>
           </div>
           <div className="flex gap-4">
             <SignedOut>
@@ -46,11 +46,11 @@ export default function Home() {
       <section className="px-8 py-20">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-dark mb-6">
-            Your AI-Powered Financial Future
+            Intelligent Wealth Management
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Experience the power of autonomous AI agents working together to analyze your portfolio, 
-            plan your retirement, and optimize your investments.
+            Harness multi-agent AI orchestration for comprehensive portfolio analysis,
+            retirement projections, and data-driven investment insights.
           </p>
           <div className="flex gap-6 justify-center">
             <SignedOut>
@@ -78,28 +78,28 @@ export default function Home() {
       <section className="px-8 py-20 bg-white">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-dark mb-12">
-            Meet Your AI Advisory Team
+            Autonomous Agent Orchestra
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-ai-accent mb-2">Financial Planner</h3>
-              <p className="text-gray-600">Coordinates your complete financial analysis with intelligent orchestration</p>
+              <div className="text-4xl mb-4">🧠</div>
+              <h3 className="text-xl font-semibold text-emerald-600 mb-2">Orchestrator</h3>
+              <p className="text-gray-600">Coordinates specialized agents via SQS-based parallel processing</p>
+            </div>
+            <div className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold text-primary mb-2">Research Agent</h3>
+              <p className="text-gray-600">Browses financial news and stores insights in vector database</p>
             </div>
             <div className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold text-primary mb-2">Portfolio Analyst</h3>
-              <p className="text-gray-600">Deep analysis of holdings, performance metrics, and risk assessment</p>
-            </div>
-            <div className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">📈</div>
-              <h3 className="text-xl font-semibold text-success mb-2">Chart Specialist</h3>
-              <p className="text-gray-600">Visualizes your portfolio composition with interactive charts</p>
+              <h3 className="text-xl font-semibold text-success mb-2">Analytics Agent</h3>
+              <p className="text-gray-600">Generates performance metrics, risk scores, and visualizations</p>
             </div>
             <div className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-accent mb-2">Retirement Planner</h3>
-              <p className="text-gray-600">Projects your retirement readiness with Monte Carlo simulations</p>
+              <h3 className="text-xl font-semibold text-accent mb-2">Projection Agent</h3>
+              <p className="text-gray-600">Monte Carlo simulations for retirement and goal planning</p>
             </div>
           </div>
         </div>
@@ -109,23 +109,23 @@ export default function Home() {
       <section className="px-8 py-20 bg-gradient-to-r from-primary/10 to-ai-accent/10">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-dark mb-12">
-            Enterprise-Grade AI Advisory
+            Production-Ready Architecture
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-md">
-              <div className="text-accent text-2xl mb-4">⚡</div>
-              <h3 className="text-xl font-semibold mb-3">Real-Time Analysis</h3>
-              <p className="text-gray-600">Watch AI agents collaborate in parallel to analyze your complete financial picture</p>
+              <div className="text-accent text-2xl mb-4">🚀</div>
+              <h3 className="text-xl font-semibold mb-3">Serverless Scale</h3>
+              <p className="text-gray-600">Lambda, App Runner, and Aurora Serverless v2 for cost-efficient scaling</p>
             </div>
             <div className="bg-white p-8 rounded-xl shadow-md">
-              <div className="text-accent text-2xl mb-4">🔒</div>
-              <h3 className="text-xl font-semibold mb-3">Bank-Level Security</h3>
-              <p className="text-gray-600">Your data is protected with enterprise security and row-level access controls</p>
+              <div className="text-accent text-2xl mb-4">🔐</div>
+              <h3 className="text-xl font-semibold mb-3">Enterprise Security</h3>
+              <p className="text-gray-600">Clerk authentication, row-level access, and AWS security best practices</p>
             </div>
             <div className="bg-white p-8 rounded-xl shadow-md">
-              <div className="text-accent text-2xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold mb-3">Comprehensive Reports</h3>
-              <p className="text-gray-600">Detailed markdown reports with interactive charts and retirement projections</p>
+              <div className="text-accent text-2xl mb-4">🧬</div>
+              <h3 className="text-xl font-semibold mb-3">Vector Search</h3>
+              <p className="text-gray-600">S3 Vectors with SageMaker embeddings for semantic document retrieval</p>
             </div>
           </div>
         </div>
@@ -150,10 +150,10 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="px-8 py-6 bg-gray-900 text-gray-400 text-center text-sm">
-        <p>© 2025 Alex AI Financial Advisor. All rights reserved.</p>
+        <p>© 2025 SAGE Financial Intelligence. Built by Samuel Villa-Smith.</p>
         <p className="mt-2">
-          This AI-generated advice has not been vetted by a qualified financial advisor and should not be used for trading decisions. 
-          For informational purposes only.
+          AI-generated insights are for informational purposes only. Not financial advice.
+          Consult a qualified advisor before making investment decisions.
         </p>
       </footer>
     </div>

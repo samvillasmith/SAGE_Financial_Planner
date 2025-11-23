@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Watch CloudWatch logs from all Alex agents in real-time.
+Watch CloudWatch logs from all Sage agents in real-time.
 Polls all 5 agent log groups simultaneously and displays output with color coding.
 """
 
@@ -27,11 +27,11 @@ COLORS = {
 
 # Agent log groups
 LOG_GROUPS = {
-    'PLANNER': '/aws/lambda/alex-planner',
-    'TAGGER': '/aws/lambda/alex-tagger',
-    'REPORTER': '/aws/lambda/alex-reporter',
-    'CHARTER': '/aws/lambda/alex-charter',
-    'RETIREMENT': '/aws/lambda/alex-retirement',
+    'PLANNER': '/aws/lambda/sage-planner',
+    'TAGGER': '/aws/lambda/sage-tagger',
+    'REPORTER': '/aws/lambda/sage-reporter',
+    'CHARTER': '/aws/lambda/sage-charter',
+    'RETIREMENT': '/aws/lambda/sage-retirement',
 }
 
 
@@ -131,7 +131,7 @@ class AgentLogWatcher:
 
     def watch(self, poll_interval: int = 2):
         """Watch all agent logs continuously."""
-        print(f"{COLORS['BOLD']}Watching CloudWatch logs for all Alex agents...{COLORS['RESET']}")
+        print(f"{COLORS['BOLD']}Watching CloudWatch logs for all Sage agents...{COLORS['RESET']}")
         print(f"Looking back {self.lookback_minutes} minutes initially")
         print(f"Polling every {poll_interval} seconds")
         print(f"Press Ctrl+C to stop\n")
@@ -176,7 +176,7 @@ class AgentLogWatcher:
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description='Watch CloudWatch logs from all Alex agents')
+    parser = argparse.ArgumentParser(description='Watch CloudWatch logs from all Sage agents')
     parser.add_argument(
         '--region',
         default='us-east-1',

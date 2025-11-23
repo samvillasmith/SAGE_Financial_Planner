@@ -15,16 +15,16 @@ load_dotenv(env_path, override=True)
 
 # Get configuration
 VECTOR_BUCKET = os.getenv('VECTOR_BUCKET')
-SAGEMAKER_ENDPOINT = os.getenv('SAGEMAKER_ENDPOINT', 'alex-embedding-endpoint')
+SAGEMAKER_ENDPOINT = os.getenv('SAGEMAKER_ENDPOINT', 'sage-embedding-endpoint')
 INDEX_NAME = 'financial-research'
 
 if not VECTOR_BUCKET:
     print("Error: Please run Guide 3 Step 4 to save VECTOR_BUCKET to .env")
     exit(1)
 
-# Initialize AWS clients
-s3_vectors = boto3.client('s3vectors')
-sagemaker_runtime = boto3.client('sagemaker-runtime')
+# Initialize AWS clients - S3 Vectors requires us-east-1
+s3_vectors = boto3.client('s3vectors', region_name='us-east-1')
+sagemaker_runtime = boto3.client('sagemaker-runtime', region_name='us-east-1')
 
 def get_embedding(text):
     """Get embedding vector from SageMaker endpoint."""
@@ -119,31 +119,42 @@ def search_vectors(query_text, k=5):
 
 def main():
     """Explore the S3 Vectors database."""
+    import sys
+
     print("=" * 60)
-    print("Alex S3 Vectors Database Explorer")
+    print("Sage S3 Vectors Database Explorer")
     print("=" * 60)
     print(f"Bucket: {VECTOR_BUCKET}")
     print(f"Index: {INDEX_NAME}")
     print()
-    
+
     # List all vectors
     list_all_vectors()
-    
-    # Example searches
-    print("=" * 60)
-    print("Example Semantic Searches")
-    print("=" * 60)
-    
-    # Search for specific concepts
-    search_queries = [
-        "electric vehicles and sustainable transportation",
-        "cloud computing and AWS services",
-        "artificial intelligence and GPU computing"
-    ]
-    
-    for query in search_queries:
-        search_vectors(query, k=3)
-    
+
+    # Check for command line argument
+    if len(sys.argv) > 1:
+        # User provided a custom search query
+        custom_query = " ".join(sys.argv[1:])
+        print("=" * 60)
+        print("Custom Search")
+        print("=" * 60)
+        search_vectors(custom_query, k=5)
+    else:
+        # Default example searches
+        print("=" * 60)
+        print("Example Semantic Searches")
+        print("=" * 60)
+
+        # Search for specific concepts
+        search_queries = [
+            "electric vehicles and sustainable transportation",
+            "cloud computing and AWS services",
+            "artificial intelligence and GPU computing"
+        ]
+
+        for query in search_queries:
+            search_vectors(query, k=3)
+
     print("\n✨ S3 Vectors provides semantic search - notice how it finds")
     print("   conceptually related documents even with different wording!")
 

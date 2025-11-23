@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Destroy the Alex Financial Advisor Part 7 infrastructure.
+Destroy the Sage Financial Advisor Part 7 infrastructure.
 This script:
 1. Empties the S3 bucket
 2. Destroys infrastructure with Terraform
@@ -156,7 +156,7 @@ def clean_local_artifacts():
 
 def main():
     """Main destruction function."""
-    print("💥 Alex Financial Advisor - Part 7 Infrastructure Destruction")
+    print("💥 Sage Financial Advisor - Part 7 Infrastructure Destruction")
     print("=" * 60)
 
     # Confirm destruction

@@ -94,7 +94,7 @@ async def send_job_to_sqs(job_id: str):
     sqs = boto3.client('sqs', region_name=os.getenv('DEFAULT_AWS_REGION', 'us-east-1'))
     
     # Get queue URL
-    queue_name = 'alex-analysis-jobs'
+    queue_name = 'sage-analysis-jobs'
     response = sqs.get_queue_url(QueueName=queue_name)
     queue_url = response['QueueUrl']
     

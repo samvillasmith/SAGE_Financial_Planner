@@ -27,13 +27,13 @@ output "setup_instructions" {
     
     Add the following to your .env file:
     VECTOR_BUCKET=${aws_s3_bucket.vectors.id}
-    ALEX_API_ENDPOINT=${aws_api_gateway_stage.api.invoke_url}/ingest
+    SAGE_API_ENDPOINT=${aws_api_gateway_stage.api.invoke_url}/ingest
     
     To get your API key value:
     terraform output -raw api_key_value
 
     Then add to .env:
-    ALEX_API_KEY=<the-api-key-value>
+    SAGE_API_KEY=<the-api-key-value>
     
     Test the API:
     curl -X POST ${aws_api_gateway_stage.api.invoke_url}/ingest \

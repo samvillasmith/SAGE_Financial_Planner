@@ -69,7 +69,7 @@ def test_charter_lambda():
     # Invoke Lambda
     try:
         response = lambda_client.invoke(
-            FunctionName="alex-charter",
+            FunctionName="sage-charter",
             InvocationType="RequestResponse",
             Payload=json.dumps({"job_id": job_id, "portfolio_data": portfolio_data}),
         )

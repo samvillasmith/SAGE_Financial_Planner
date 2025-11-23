@@ -17,13 +17,14 @@ def get_service_url():
         # Get service ARN first
         result = subprocess.run([
             "aws", "apprunner", "list-services",
-            "--query", "ServiceSummaryList[?ServiceName=='alex-researcher'].ServiceArn",
+            "--region", "us-east-1",
+            "--query", "ServiceSummaryList[?ServiceName=='sage-researcher'].ServiceArn",
             "--output", "json"
         ], capture_output=True, text=True, check=True)
         
         service_arns = json.loads(result.stdout)
         if not service_arns:
-            print("❌ App Runner service 'alex-researcher' not found.")
+            print("❌ App Runner service 'sage-researcher' not found.")
             print("   Have you deployed it yet? Run: python deploy.py")
             sys.exit(1)
         
@@ -32,6 +33,7 @@ def get_service_url():
         # Get service URL
         result = subprocess.run([
             "aws", "apprunner", "describe-service",
+            "--region", "us-east-1",
             "--service-arn", service_arn,
             "--query", "Service.ServiceUrl",
             "--output", "text"
@@ -121,7 +123,7 @@ def test_research(topic=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Test the Alex Researcher service",
+        description="Test the Sage Researcher service",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

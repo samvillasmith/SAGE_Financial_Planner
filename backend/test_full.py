@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Full end-to-end test via SQS for the Alex platform"""
+"""Full end-to-end test via SQS for the Sage platform"""
 
 import os
 import json
@@ -96,7 +96,7 @@ def main():
     print(f"  ✓ Created job: {job_id}")
     
     # Get queue URL
-    QUEUE_NAME = 'alex-analysis-jobs'
+    QUEUE_NAME = 'sage-analysis-jobs'
     response = sqs.list_queues(QueueNamePrefix=QUEUE_NAME)
     queue_url = None
     for url in response.get('QueueUrls', []):

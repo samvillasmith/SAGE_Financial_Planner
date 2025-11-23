@@ -36,11 +36,11 @@ resource "random_password" "db_password" {
 
 # Secrets Manager secret for database credentials
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name                    = "alex-aurora-credentials-${random_id.suffix.hex}"
+  name                    = "sage-aurora-credentials-${random_id.suffix.hex}"
   recovery_window_in_days = 0  # For development - immediate deletion
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
@@ -52,7 +52,7 @@ resource "random_id" "suffix" {
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
   secret_string = jsonencode({
-    username = "alexadmin"
+    username = "sageadmin"
     password = random_password.db_password.result
   })
 }
@@ -70,19 +70,19 @@ data "aws_subnets" "default" {
 }
 
 resource "aws_db_subnet_group" "aurora" {
-  name       = "alex-aurora-subnet-group"
+  name       = "sage-aurora-subnet-group"
   subnet_ids = data.aws_subnets.default.ids
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
 
 # Security group for Aurora
 resource "aws_security_group" "aurora" {
-  name        = "alex-aurora-sg"
-  description = "Security group for Alex Aurora cluster"
+  name        = "sage-aurora-sg"
+  description = "Security group for Sage Aurora cluster"
   vpc_id      = data.aws_vpc.default.id
   
   # Allow PostgreSQL access from within VPC
@@ -101,19 +101,19 @@ resource "aws_security_group" "aurora" {
   }
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
 
 # Aurora Serverless v2 Cluster
 resource "aws_rds_cluster" "aurora" {
-  cluster_identifier     = "alex-aurora-cluster"
+  cluster_identifier     = "sage-aurora-cluster"
   engine                 = "aurora-postgresql"
   engine_mode            = "provisioned"
   engine_version         = "15.12"
-  database_name          = "alex"
-  master_username        = "alexadmin"
+  database_name          = "sage"
+  master_username        = "sageadmin"
   master_password        = random_password.db_password.result
   
   # Serverless v2 scaling configuration
@@ -139,14 +139,14 @@ resource "aws_rds_cluster" "aurora" {
   apply_immediately   = true
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
 
 # Aurora Serverless v2 Instance
 resource "aws_rds_cluster_instance" "aurora" {
-  identifier          = "alex-aurora-instance-1"
+  identifier          = "sage-aurora-instance-1"
   cluster_identifier  = aws_rds_cluster.aurora.id
   instance_class      = "db.serverless"
   engine              = aws_rds_cluster.aurora.engine
@@ -155,14 +155,14 @@ resource "aws_rds_cluster_instance" "aurora" {
   performance_insights_enabled = false  # Save costs in development
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
 
 # IAM role for Lambda to access Aurora Data API
 resource "aws_iam_role" "lambda_aurora_role" {
-  name = "alex-lambda-aurora-role"
+  name = "sage-lambda-aurora-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -178,14 +178,14 @@ resource "aws_iam_role" "lambda_aurora_role" {
   })
   
   tags = {
-    Project = "alex"
+    Project = "sage"
     Part    = "5"
   }
 }
 
 # IAM policy for Data API access
 resource "aws_iam_role_policy" "lambda_aurora_policy" {
-  name = "alex-lambda-aurora-policy"
+  name = "sage-lambda-aurora-policy"
   role = aws_iam_role.lambda_aurora_role.id
   
   policy = jsonencode({

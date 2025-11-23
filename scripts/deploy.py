@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Deploy the Alex Financial Advisor Part 7 infrastructure.
+Deploy the Sage Financial Advisor Part 7 infrastructure.
 This script:
 1. Packages the Lambda function
 2. Deploys infrastructure with Terraform to get API URL
@@ -328,7 +328,7 @@ def display_deployment_info(outputs):
 
 def main():
     """Main deployment function."""
-    print("🚀 Alex Financial Advisor - Part 7 Deployment")
+    print("🚀 Sage Financial Advisor - Part 7 Deployment")
     print("=" * 50)
 
     # Check prerequisites

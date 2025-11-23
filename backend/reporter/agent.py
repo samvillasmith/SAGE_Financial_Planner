@@ -131,12 +131,12 @@ async def get_market_insights(
         # Get account ID
         sts = boto3.client("sts")
         account_id = sts.get_caller_identity()["Account"]
-        bucket = f"alex-vectors-{account_id}"
+        bucket = f"sage-vectors-{account_id}"
 
         # Get embeddings
         sagemaker_region = os.getenv("DEFAULT_AWS_REGION", "us-east-1")
         sagemaker = boto3.client("sagemaker-runtime", region_name=sagemaker_region)
-        endpoint_name = os.getenv("SAGEMAKER_ENDPOINT", "alex-embedding-endpoint")
+        endpoint_name = os.getenv("SAGEMAKER_ENDPOINT", "sage-embedding-endpoint")
         query = f"market analysis {' '.join(symbols[:5])}" if symbols else "market outlook"
 
         response = sagemaker.invoke_endpoint(

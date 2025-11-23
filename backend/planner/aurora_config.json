@@ -1,6 +1,6 @@
 {
-  "cluster_arn": "arn:aws:rds:us-east-1:392340646348:cluster:alex-aurora-cluster",
-  "secret_arn": "arn:aws:secretsmanager:us-east-1:392340646348:secret:alex-aurora-data-api-credentials-aGIMlV",
-  "database": "alex",
+  "cluster_arn": "arn:aws:rds:us-east-1:392340646348:cluster:sage-aurora-cluster",
+  "secret_arn": "arn:aws:secretsmanager:us-east-1:392340646348:secret:sage-aurora-data-api-credentials-aGIMlV",
+  "database": "sage",
   "region": "us-east-1"
 }

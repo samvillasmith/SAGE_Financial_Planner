@@ -36,10 +36,10 @@ data "terraform_remote_state" "agents" {
 }
 
 locals {
-  name_prefix = "alex"
+  name_prefix = "sage"
 
   common_tags = {
-    Project     = "alex"
+    Project     = "sage"
     Part        = "7_frontend"
     ManagedBy   = "terraform"
   }
@@ -178,11 +178,11 @@ resource "aws_iam_role_policy" "api_lambda_invoke" {
         Effect = "Allow"
         Action = "lambda:InvokeFunction"
         Resource = [
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:alex-planner",
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:alex-tagger",
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:alex-reporter",
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:alex-charter",
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:alex-retirement"
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:sage-planner",
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:sage-tagger",
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:sage-reporter",
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:sage-charter",
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:sage-retirement"
         ]
       }
     ]
@@ -297,7 +297,7 @@ resource "aws_cloudfront_distribution" "main" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
   tags                = local.common_tags
-  comment             = "Alex Financial Advisor Frontend"
+  comment             = "Sage Financial Advisor Frontend"
 
   # S3 origin for frontend
   origin {

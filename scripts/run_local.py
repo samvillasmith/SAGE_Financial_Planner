@@ -190,7 +190,7 @@ def start_frontend():
 def monitor_processes():
     """Monitor running processes and show their output"""
     print("\n" + "="*60)
-    print("🎯 Alex Financial Advisor - Local Development")
+    print("🎯 Sage Financial Advisor - Local Development")
     print("="*60)
     print("\n📍 Services:")
     print("  Frontend: http://localhost:3000")
@@ -219,7 +219,7 @@ def monitor_processes():
 
 def main():
     """Main entry point"""
-    print("\n🔧 Alex Financial Advisor - Local Development Setup")
+    print("\n🔧 Sage Financial Advisor - Local Development Setup")
     print("="*50)
 
     # Check prerequisites
