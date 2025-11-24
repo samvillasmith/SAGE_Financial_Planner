@@ -90,11 +90,11 @@ resource "aws_iam_role" "lambda_role" {
   }
 }
 
-# Lambda policy for S3 Vectors and SageMaker
+# Lambda policy for Aurora pgvector and SageMaker
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "sage-ingest-lambda-policy"
   role = aws_iam_role.lambda_role.id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -110,19 +110,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          aws_s3_bucket.vectors.arn,
-          "${aws_s3_bucket.vectors.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "sagemaker:InvokeEndpoint"
         ]
         Resource = "arn:aws:sagemaker:${var.aws_region}:${data.aws_caller_identity.current.account_id}:endpoint/${var.sagemaker_endpoint_name}"
@@ -130,12 +117,17 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "s3vectors:PutVectors",
-          "s3vectors:QueryVectors",
-          "s3vectors:GetVectors",
-          "s3vectors:DeleteVectors"
+          "rds-data:ExecuteStatement",
+          "rds-data:BatchExecuteStatement"
         ]
-        Resource = "arn:aws:s3vectors:${var.aws_region}:${data.aws_caller_identity.current.account_id}:bucket/${aws_s3_bucket.vectors.id}/index/*"
+        Resource = var.aurora_cluster_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = var.aurora_secret_arn
       }
     ]
   })
@@ -145,23 +137,26 @@ resource "aws_iam_role_policy" "lambda_policy" {
 resource "aws_lambda_function" "ingest" {
   function_name = "sage-ingest"
   role          = aws_iam_role.lambda_role.arn
-  
+
   # Note: The deployment package will be created by the guide instructions
   filename         = "${path.module}/../../backend/ingest/lambda_function.zip"
   source_code_hash = fileexists("${path.module}/../../backend/ingest/lambda_function.zip") ? filebase64sha256("${path.module}/../../backend/ingest/lambda_function.zip") : null
-  
-  handler = "ingest_s3vectors.lambda_handler"
-  runtime = "python3.12"
-  timeout = 60
+
+  handler     = "ingest_pgvector.lambda_handler"
+  runtime     = "python3.12"
+  timeout     = 60
   memory_size = 512
-  
+
   environment {
     variables = {
-      VECTOR_BUCKET      = aws_s3_bucket.vectors.id
-      SAGEMAKER_ENDPOINT = var.sagemaker_endpoint_name
+      AURORA_CLUSTER_ARN   = var.aurora_cluster_arn
+      AURORA_SECRET_ARN    = var.aurora_secret_arn
+      AURORA_DATABASE      = var.aurora_database
+      SAGEMAKER_ENDPOINT   = var.sagemaker_endpoint_name
+      DEFAULT_AWS_REGION   = var.aws_region
     }
   }
-  
+
   tags = {
     Project = "sage"
     Part    = "3"

@@ -116,7 +116,7 @@ async def get_market_insights(
     wrapper: RunContextWrapper[ReporterContext], symbols: List[str]
 ) -> str:
     """
-    Retrieve market insights from S3 Vectors knowledge base.
+    Retrieve market insights from Aurora pgvector knowledge base.
 
     Args:
         wrapper: Context wrapper with job_id and database
@@ -128,14 +128,18 @@ async def get_market_insights(
     try:
         import boto3
 
-        # Get account ID
-        sts = boto3.client("sts")
-        account_id = sts.get_caller_identity()["Account"]
-        bucket = f"sage-vectors-{account_id}"
+        # Get Aurora connection details
+        cluster_arn = os.getenv("AURORA_CLUSTER_ARN")
+        secret_arn = os.getenv("AURORA_SECRET_ARN")
+        database = os.getenv("AURORA_DATABASE", "sage")
+        aws_region = os.getenv("DEFAULT_AWS_REGION", "us-east-1")
 
-        # Get embeddings
-        sagemaker_region = os.getenv("DEFAULT_AWS_REGION", "us-east-1")
-        sagemaker = boto3.client("sagemaker-runtime", region_name=sagemaker_region)
+        if not cluster_arn or not secret_arn:
+            logger.warning("Reporter: Aurora credentials not configured")
+            return "Market insights unavailable - database not configured."
+
+        # Get embeddings from SageMaker
+        sagemaker = boto3.client("sagemaker-runtime", region_name=aws_region)
         endpoint_name = os.getenv("SAGEMAKER_ENDPOINT", "sage-embedding-endpoint")
         query = f"market analysis {' '.join(symbols[:5])}" if symbols else "market outlook"
 
@@ -152,30 +156,47 @@ async def get_market_insights(
         else:
             embedding = result
 
-        # Search vectors
-        s3v = boto3.client("s3vectors", region_name=sagemaker_region)
-        response = s3v.query_vectors(
-            vectorBucketName=bucket,
-            indexName="financial-research",
-            queryVector={"float32": embedding},
-            topK=3,
-            returnMetadata=True,
+        # Format embedding as PostgreSQL vector string
+        embedding_str = '[' + ','.join(map(str, embedding)) + ']'
+
+        # Search pgvector with cosine similarity
+        rds_data = boto3.client("rds-data", region_name=aws_region)
+
+        sql = """
+            SELECT
+                text,
+                metadata,
+                1 - (embedding <=> :embedding::vector) as similarity
+            FROM documents
+            ORDER BY embedding <=> :embedding::vector
+            LIMIT 3
+        """
+
+        response = rds_data.execute_statement(
+            resourceArn=cluster_arn,
+            secretArn=secret_arn,
+            database=database,
+            sql=sql,
+            parameters=[
+                {'name': 'embedding', 'value': {'stringValue': embedding_str}}
+            ]
         )
 
         # Format insights
         insights = []
-        for vector in response.get("vectors", []):
-            metadata = vector.get("metadata", {})
-            text = metadata.get("text", "")[:200]
+        for record in response.get("records", []):
+            text = record[0]['stringValue'][:200] if record[0].get('stringValue') else ""
+            metadata = json.loads(record[1]['stringValue']) if record[1].get('stringValue') else {}
+
             if text:
-                company = metadata.get("company_name", "")
+                company = metadata.get("company_name", metadata.get("symbol", ""))
                 prefix = f"{company}: " if company else "- "
                 insights.append(f"{prefix}{text}...")
 
         if insights:
             return "Market Insights:\n" + "\n".join(insights)
         else:
-            return "Market insights unavailable - proceeding with standard analysis."
+            return "Market insights unavailable - no documents found in knowledge base."
 
     except Exception as e:
         logger.warning(f"Reporter: Could not retrieve market insights: {e}")

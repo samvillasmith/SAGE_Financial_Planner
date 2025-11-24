@@ -52,8 +52,14 @@ def create_deployment_package():
     
     # Copy Lambda function code
     print("Copying Lambda function code...")
-    
-    # Copy S3 Vectors Lambda handlers
+
+    # Copy pgvector Lambda handlers (preferred)
+    if (current_dir / 'ingest_pgvector.py').exists():
+        shutil.copy(current_dir / 'ingest_pgvector.py', package_dir)
+    if (current_dir / 'search_pgvector.py').exists():
+        shutil.copy(current_dir / 'search_pgvector.py', package_dir)
+
+    # Copy S3 Vectors Lambda handlers (legacy)
     if (current_dir / 'ingest_s3vectors.py').exists():
         shutil.copy(current_dir / 'ingest_s3vectors.py', package_dir)
     if (current_dir / 'search_s3vectors.py').exists():

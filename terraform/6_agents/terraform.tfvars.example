@@ -21,7 +21,7 @@ bedrock_model_id = "us.amazon.nova-pro-v1:0"
 
 # Bedrock region (us-west-2 has the most models available)
 # Note: This can be different from your Lambda region - cross-region calls work fine
-bedrock_region = "us-west-2"
+bedrock_region = "us-east-1"
 
 # SageMaker endpoint name from Part 2
 # Default: alex-embedding-endpoint
